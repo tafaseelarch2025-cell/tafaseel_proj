@@ -36,7 +36,7 @@ import {
 export const authProvider: AuthProvider = {
     login: async ({ email, password }) => {
         try {
-            const res = await fetch("http://localhost:8080/api/v1/auth/login", {
+            const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -102,7 +102,7 @@ const App: React.FC = () => {
                         <Refine
                             routerProvider={routerBindings}
                             authProvider={authProvider}
-                            dataProvider={dataProvider("http://localhost:8080/api/v1")}
+                            dataProvider={dataProvider("https://tafaseel-project.onrender.com/api/v1")}
                             notificationProvider={notificationProvider}
                             resources={[
                                 { 
