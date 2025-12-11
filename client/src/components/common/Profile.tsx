@@ -62,7 +62,7 @@ const Profile = ({ userId, type }: ProfileProps) => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`, {
+      const res = await fetch(`https://tafaseel-project.onrender.com/api/v1/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editableData),
