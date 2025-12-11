@@ -29,7 +29,7 @@ const Profile = ({ userId, type }: ProfileProps) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/v1/users/${userId}`);
+        const res = await fetch(`https://tafaseel-project.onrender.com/api/v1/users/${userId}`);
         if (!res.ok) throw new Error("Failed to fetch user data");
         const data: UserData = await res.json();
         setUserData(data);
