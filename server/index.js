@@ -13,7 +13,7 @@ dotenv.config();
 
 const app = express();
 app.use(cors({
-  origin: "https://tafasee-dashbaord.netlify.app/",  // replace with your actual Nitify URL
+  origin: "https://tafasee-dashbaord.netlify.app",  // replace with your actual Nitify URL
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
