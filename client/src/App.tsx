@@ -31,6 +31,7 @@ import {
     AgentProfile,
     MyProfile,
 } from "pages";
+import ProtectedRoute from "components/ProtectedRoute";
 
 // ----------------- AUTH PROVIDER -----------------
 export const authProvider: AuthProvider = {
@@ -131,74 +132,99 @@ const App: React.FC = () => {
                             }}
                             // NO 'layout' prop here - handled by swizzling or ThemedLayoutV2
                         >
+
                             <Routes>
-                                <Route 
-                                    index 
-                                    element={
-                                        <ThemedLayoutV2>  {/* Wrap non-layout routes */}
-                                            <Home />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route path="/login" element={<Login />} />  {/* Login outside layout */}
-                                <Route 
-                                    path="/projects" 
-                                    element={
-                                        <ThemedLayoutV2>
-                                            <AllProjects />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route 
-                                    path="/projects/create" 
-                                    element={
-                                        <ThemedLayoutV2>
-                                            <CreateProject />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route 
-                                    path="/projects/edit/:id" 
-                                    element={
-                                        <ThemedLayoutV2>
-                                            <EditProject />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route 
-                                    path="/projects/show/:id" 
-                                    element={
-                                        <ThemedLayoutV2>
-                                            <ProjectDetails />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route 
-                                    path="/agents" 
-                                    element={
-                                        <ThemedLayoutV2>
-                                            <Agents />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route 
-                                    path="/agents/:id" 
-                                    element={
-                                        <ThemedLayoutV2>
-                                            <AgentProfile />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route 
-                                    path="/my-profile" 
-                                    element={
-                                        <ThemedLayoutV2>
-                                            <MyProfile />
-                                        </ThemedLayoutV2>
-                                    } 
-                                />
-                                <Route path="*" element={<ErrorComponent />} />
-                            </Routes>
+    {/* Login route */}
+    <Route path="/login" element={<Login />} />
+
+    {/* Protected routes */}
+    <Route
+        path="/"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <Home />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+    <Route
+        path="/projects"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <AllProjects />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+    <Route
+        path="/projects/create"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <CreateProject />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+    <Route
+        path="/projects/edit/:id"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <EditProject />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+    <Route
+        path="/projects/show/:id"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <ProjectDetails />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+    <Route
+        path="/agents"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <Agents />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+    <Route
+        path="/agents/:id"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <AgentProfile />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+    <Route
+        path="/my-profile"
+        element={
+            <ThemedLayoutV2>
+                <ProtectedRoute>
+                    <MyProfile />
+                </ProtectedRoute>
+            </ThemedLayoutV2>
+        }
+    />
+
+    {/* Catch all */}
+    <Route path="*" element={<ErrorComponent />} />
+</Routes>
+
+                    
+
                             <DocumentTitleHandler />
                             <UnsavedChangesNotifier />
                         </Refine>
