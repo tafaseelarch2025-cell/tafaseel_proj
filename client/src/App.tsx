@@ -32,12 +32,15 @@ import {
     MyProfile,
 } from "pages";
 import ProtectedRoute from "components/ProtectedRoute";
+import { Sider } from "components/layout";
 
 // ----------------- AUTH PROVIDER -----------------
 export const authProvider: AuthProvider = {
     login: async ({ email, password }) => {
         try {
-            const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login", {
+            const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login",
+                                             
+ {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -91,148 +94,117 @@ export const authProvider: AuthProvider = {
 const lightTheme = createTheme({ palette: { mode: "light" } });
 
 // ----------------- APP -----------------
+
+
 const App: React.FC = () => {
-    return (
-        <ColorModeContextProvider>
-            <ThemeProvider theme={lightTheme}>
-                <CssBaseline />
-                <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
-
-                <RefineSnackbarProvider>
-                    <BrowserRouter>
-                        <Refine
-                            routerProvider={routerBindings}
-                            authProvider={authProvider}
-                            dataProvider={dataProvider("https://tafaseel-project.onrender.com/api/v1")}
-                            notificationProvider={notificationProvider}
-                            resources={[
-                                { 
-                                    name: "projects", 
-                                    list: "/projects", 
-                                    create: "/projects/create", 
-                                    edit: "/projects/edit/:id", 
-                                    show: "/projects/show/:id",
-                                    meta: { label: "Projects" }  // Helps with menu labels
-                                },
-                                { 
-                                    name: "agents", 
-                                    list: "/agents", 
-                                    show: "/agents/:id",
-                                    meta: { label: "Agents" }
-                                },
-                                { 
-                                    name: "my-profile", 
-                                    list: "/my-profile",
-                                    meta: { label: "My Profile" }
-                                },
-                            ]}
-                            options={{
-                                syncWithLocation: true,
-                                warnWhenUnsavedChanges: true,
-                            }}
-                            // NO 'layout' prop here - handled by swizzling or ThemedLayoutV2
-                        >
-
-                            <Routes>
-    {/* Login route */}
-    <Route path="/login" element={<Login />} />
-
-    {/* Protected routes */}
-    <Route
-        path="/"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <Home />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-    <Route
-        path="/projects"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <AllProjects />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-    <Route
-        path="/projects/create"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <CreateProject />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-    <Route
-        path="/projects/edit/:id"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <EditProject />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-    <Route
-        path="/projects/show/:id"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <ProjectDetails />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-    <Route
-        path="/agents"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <Agents />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-    <Route
-        path="/agents/:id"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <AgentProfile />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-    <Route
-        path="/my-profile"
-        element={
-            <ThemedLayoutV2>
-                <ProtectedRoute>
-                    <MyProfile />
-                </ProtectedRoute>
-            </ThemedLayoutV2>
-        }
-    />
-
-    {/* Catch all */}
-    <Route path="*" element={<ErrorComponent />} />
-</Routes>
-
-                    
-
-                            <DocumentTitleHandler />
-                            <UnsavedChangesNotifier />
-                        </Refine>
-                    </BrowserRouter>
-                </RefineSnackbarProvider>
-            </ThemeProvider>
-        </ColorModeContextProvider>
-    );
+  return (
+    <ColorModeContextProvider>
+      <ThemeProvider theme={lightTheme}>
+        <CssBaseline />
+        <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
+        <RefineSnackbarProvider>
+          <BrowserRouter>
+            <Refine
+              routerProvider={routerBindings}
+              authProvider={authProvider}
+              dataProvider={dataProvider("https://tafaseel-project.onrender.com/api/v1")}
+              notificationProvider={notificationProvider}
+              resources={[
+                {
+                  name: "projects",
+                  list: "/projects",
+                  create: "/projects/create",
+                  edit: "/projects/edit/:id",
+                  show: "/projects/show/:id",
+                  meta: { label: "Projects" }
+                },
+                {
+                  name: "my-profile",
+                  list: "/my-profile",
+                  meta: { label: "My Profile" }
+                },
+              ]}
+              options={{
+                syncWithLocation: true,
+                warnWhenUnsavedChanges: true,
+              }}
+            >
+              <Routes>
+                {/* Login route */}
+                <Route path="/login" element={<Login />} />
+                {/* Protected routes - Use ThemedLayoutV2 with custom Sider */}
+                <Route
+                  path="/"
+                  element={
+                    <ThemedLayoutV2 Sider={Sider}>
+                      <ProtectedRoute>
+                        <Home />
+                      </ProtectedRoute>
+                    </ThemedLayoutV2>
+                  }
+                />
+                <Route
+                  path="/projects"
+                  element={
+                    <ThemedLayoutV2 Sider={Sider}>
+                      <ProtectedRoute>
+                        <AllProjects />
+                      </ProtectedRoute>
+                    </ThemedLayoutV2>
+                  }
+                />
+                <Route
+                  path="/projects/create"
+                  element={
+                    <ThemedLayoutV2 Sider={Sider}>
+                      <ProtectedRoute>
+                        <CreateProject />
+                      </ProtectedRoute>
+                    </ThemedLayoutV2>
+                  }
+                />
+                <Route
+                  path="/projects/edit/:id"
+                  element={
+                    <ThemedLayoutV2 Sider={Sider}>
+                      <ProtectedRoute>
+                        <EditProject />
+                      </ProtectedRoute>
+                    </ThemedLayoutV2>
+                  }
+                />
+                <Route
+                  path="/projects/show/:id"
+                  element={
+                    <ThemedLayoutV2 Sider={Sider}>
+                      <ProtectedRoute>
+                        <ProjectDetails />
+                      </ProtectedRoute>
+                    </ThemedLayoutV2>
+                  }
+                />
+                <Route
+                  path="/my-profile"
+                  element={
+                    <ThemedLayoutV2 Sider={Sider}>
+                      <ProtectedRoute>
+                        <MyProfile />
+                      </ProtectedRoute>
+                    </ThemedLayoutV2>
+                  }
+                />
+                {/* Catch all */}
+                <Route path="*" element={<ErrorComponent />} />
+              </Routes>
+              <DocumentTitleHandler />
+              <UnsavedChangesNotifier />
+            </Refine>
+          </BrowserRouter>
+        </RefineSnackbarProvider>
+      </ThemeProvider>
+    </ColorModeContextProvider>
+  );
 };
 
 export default App;
+

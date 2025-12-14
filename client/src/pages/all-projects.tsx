@@ -136,7 +136,7 @@ const AllProjects = () => {
         <CustomButton
           title="Add Project"
           handleClick={() => navigate("/projects/create")}
-          backgroundColor="#dc743c"
+          backgroundColor="#d4af37"
           color="#fcfcfc"
           icon={<Add />}
         />
@@ -159,7 +159,7 @@ const AllProjects = () => {
           <CustomButton
             title="Previous"
             handleClick={() => setCurrent((prev) => prev - 1)}
-            backgroundColor="#dc743c"
+            backgroundColor="#d4af37"
             color="#fcfcfc"
             disabled={!(current > 1)}
           />
@@ -176,7 +176,7 @@ const AllProjects = () => {
           <CustomButton
             title="Next"
             handleClick={() => setCurrent((prev) => prev + 1)}
-            backgroundColor="#dc743c"
+            backgroundColor="#d4af37"
             color="#ffffff"
             disabled={current === pageCount}
           />

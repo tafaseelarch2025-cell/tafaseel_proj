@@ -17,7 +17,7 @@ app.use(
     origin: [
       "https://tafasee-dashbaord.netlify.app",
       "https://www.tafaseelarch.com",
-      "https://tafaseelarch.com"
+      "https://tafaseelarch.com",
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,

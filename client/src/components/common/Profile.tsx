@@ -154,7 +154,7 @@ const Profile = ({ userId, type }: ProfileProps) => {
             <Stack direction="row" gap="10px" mt={2}>
               <Button
                 variant="contained"
-                sx={{ backgroundColor: "#dc743c", "&:hover": { backgroundColor: "#b35f32" } }}
+                sx={{ backgroundColor: "#e1c16e", "&:hover": { backgroundColor: "#d4af37" } }}
                 onClick={isEditing ? handleSave : handleEditToggle}
                 disabled={loading}
               >

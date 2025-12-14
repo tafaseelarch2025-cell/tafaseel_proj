@@ -95,11 +95,14 @@ export const Login: React.FC = () => {
         <Button
           type="submit"
           variant="contained"
-          color="primary"
+         
           fullWidth
           size="large"
           disabled={isLoading}
-          sx={{ mt: 3, py: 1.5 }}
+          sx={{ mt: 3, py: 1.5 ,  backgroundColor :"#d4af37" ,
+            color : "#fff" , "&:hover": {
+      backgroundColor: "#b8962f",  // Change this to your desired hover color
+    }, }}
         >
           {isLoading ? <CircularProgress size={24} color="inherit" /> : "Login"}
         </Button>
