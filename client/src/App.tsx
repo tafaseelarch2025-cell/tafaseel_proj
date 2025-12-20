@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Refine, AuthProvider } from "@refinedev/core";
+import { Refine, AuthProvider, OnErrorResponse } from "@refinedev/core";
 import dataProvider from "@refinedev/simple-rest";
 import {
     RefineSnackbarProvider,
@@ -34,62 +34,48 @@ import {
     MyProfile,
 } from "pages";
 import ProtectedRoute from "components/ProtectedRoute";
-import { Sider } from "components/layout";
+import { Header, Sider } from "components/layout";
 
 // ----------------- AUTH PROVIDER -----------------
 export const authProvider: AuthProvider = {
-    login: async ({ email, password }) => {
-        try {
-            const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login",
-                                             
- {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
+  login: async ({ email, password }) => {
+    const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.user) throw new Error(data.message || "Login failed");
 
-            const data = await res.json();
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
 
-            if (!res.ok || !data.user) {
-                return { success: false, error: new Error(data.message || "Login failed") };
-            }
+    return { success: true, redirectTo: "/" };
+  },
 
-            localStorage.setItem("isLoggedIn", "true");
-            localStorage.setItem("user", JSON.stringify(data.user));
+  logout: async () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    return { success: true, redirectTo: "/login" };
+  },
 
-            return { success: true, redirectTo: "/" };
-        } catch (error: any) {
-            return { success: false, error };
-        }
-    },
+  check: async () => {
+    return localStorage.getItem("token")
+      ? { authenticated: true }
+      : { authenticated: false, redirectTo: "/login" };
+  },
 
-    logout: async () => {
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("user");
-        return { success: true, redirectTo: "/login" };
-    },
+  getIdentity: async () => {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  },
 
-    check: async () => {
-        const isLoggedIn = localStorage.getItem("isLoggedIn");
-        return isLoggedIn === "true"
-            ? { authenticated: true }
-            : { authenticated: false, redirectTo: "/login" };
-    },
-
-    getIdentity: async () => {
-        try {
-            const user = localStorage.getItem("user");
-            if (!user || user === "undefined") return null; // safe check
-            return JSON.parse(user);
-        } catch (error) {
-            console.error("Failed to parse user from localStorage", error);
-            return null;
-        }
-    },
-
-    getPermissions: async () => null,
-    onError: async (error) => ({ error }),
+  getPermissions: async () => null,
+  onError: function (error: any): Promise<OnErrorResponse> {
+    throw new Error("Function not implemented.");
+  }
 };
+
 
 
 // ----------------- THEME -----------------
@@ -141,7 +127,7 @@ const App: React.FC = () => {
                 <Route
                   path="/"
                   element={
-                    <ThemedLayoutV2 Sider={Sider}>
+                    <ThemedLayoutV2 Sider={Sider} Header={Header}>
                       <ProtectedRoute>
                         <Home />
                       </ProtectedRoute>
@@ -151,7 +137,7 @@ const App: React.FC = () => {
                 <Route
                   path="/projects"
                   element={
-                    <ThemedLayoutV2 Sider={Sider}>
+                    <ThemedLayoutV2 Sider={Sider} Header={Header}>
                       <ProtectedRoute>
                         <AllProjects />
                       </ProtectedRoute>
@@ -161,7 +147,7 @@ const App: React.FC = () => {
                 <Route
                   path="/projects/create"
                   element={
-                    <ThemedLayoutV2 Sider={Sider}>
+                    <ThemedLayoutV2 Sider={Sider} Header={Header}>
                       <ProtectedRoute>
                         <CreateProject />
                       </ProtectedRoute>
@@ -171,7 +157,7 @@ const App: React.FC = () => {
                 <Route
                   path="/projects/edit/:id"
                   element={
-                    <ThemedLayoutV2 Sider={Sider}>
+                    <ThemedLayoutV2 Sider={Sider} Header={Header}>
                       <ProtectedRoute>
                         <EditProject />
                       </ProtectedRoute>
@@ -181,7 +167,7 @@ const App: React.FC = () => {
                 <Route
                   path="/projects/show/:id"
                   element={
-                    <ThemedLayoutV2 Sider={Sider}>
+                    <ThemedLayoutV2 Sider={Sider} Header={Header}>
                       <ProtectedRoute>
                         <ProjectDetails />
                       </ProtectedRoute>
@@ -191,7 +177,7 @@ const App: React.FC = () => {
                 <Route
                   path="/my-profile"
                   element={
-                    <ThemedLayoutV2 Sider={Sider}>
+                    <ThemedLayoutV2 Sider={Sider} Header={Header}>
                       <ProtectedRoute>
                         <MyProfile />
                       </ProtectedRoute>
@@ -201,7 +187,7 @@ const App: React.FC = () => {
                 {/* Catch all */}
                 <Route path="*" element={<ErrorComponent />} />
               </Routes>
-              <DocumentTitleHandler />
+              <DocumentTitleHandler handler={() => "Tafaseel"} />
               <UnsavedChangesNotifier />
             </Refine>
           </BrowserRouter>
