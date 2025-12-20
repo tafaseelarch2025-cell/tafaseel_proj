@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
     <AppBar
       position="sticky"
       elevation={0}
-      sx={{ background: "#b8962f" }}
+      sx={{ background: "#b8962f !important" }}
     >
       <Toolbar>
         <Stack
