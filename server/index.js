@@ -18,6 +18,7 @@ app.use(
       "https://tafasee-dashbaord.netlify.app",
       "https://www.tafaseelarch.com",
       "https://tafaseelarch.com",
+      "http://localhost:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
@@ -42,9 +43,12 @@ const startServer = async () => {
       useUnifiedTopology: true,
     });
 
-    app.listen(8080, () =>
-      console.log("Server started on port http://localhost:8080"),
-    );
+    const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
   } catch (error) {
     console.log(error);
   }
