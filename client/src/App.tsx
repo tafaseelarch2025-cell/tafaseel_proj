@@ -17,6 +17,8 @@ import routerBindings, {
 import CssBaseline from "@mui/material/CssBaseline";
 import GlobalStyles from "@mui/material/GlobalStyles";
 import { createTheme, ThemeProvider } from "@mui/material";
+import WorkOutline from "@mui/icons-material/WorkOutline";      // Projects
+import PersonOutline from "@mui/icons-material/PersonOutline";  // Profile
 
 import { ColorModeContextProvider } from "contexts";  // Your context
 
@@ -116,12 +118,12 @@ const App: React.FC = () => {
                   create: "/projects/create",
                   edit: "/projects/edit/:id",
                   show: "/projects/show/:id",
-                  meta: { label: "Projects" }
+                  meta: { label: "Projects", icon: <WorkOutline /> }
                 },
                 {
                   name: "my-profile",
                   list: "/my-profile",
-                  meta: { label: "My Profile" }
+                  meta: { label: "My Profile" , icon: <PersonOutline />,}
                 },
               ]}
               options={{
