@@ -14,7 +14,7 @@ const app = express();
 // Allow credentials is no longer needed since we're not using cookies
 app.use(cors({
   origin: [
-    "https://tafaseel-dashboard.netlify.app", // ✅ FIXED
+    "https://tafasee-dashbaord.netlify.app", // ✅ FIXED
     "https://www.tafaseelarch.com",
     "https://tafaseelarch.com",
     "http://localhost:3000",
