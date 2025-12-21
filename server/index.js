@@ -5,7 +5,6 @@ import cors from "cors";
 import connectDB from "./mongodb/connect.js";
 import userRouter from "./routes/user.routes.js";
 import projectRouter from "./routes/project.routes.js";
-import authRouter from "./routes/auth.routes.js"; // renamed for clarity
 
 dotenv.config();
 
@@ -35,7 +34,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/projects", projectRouter);
-app.use("/api/v1/auth", authRouter); // separate auth route
+app.use("/api/v1/auth", userRouter); // separate auth route
 
 const startServer = async () => {
   try {
