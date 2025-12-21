@@ -42,7 +42,9 @@ export const authProvider: AuthProvider = {
     const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: email.toLowerCase().trim(),
+        password,
+      }), 
     });
     const data = await res.json();
     if (!res.ok || !data.user) throw new Error(data.message || "Login failed");
@@ -60,10 +62,15 @@ export const authProvider: AuthProvider = {
   },
 
   check: async () => {
-    return localStorage.getItem("token")
-      ? { authenticated: true }
-      : { authenticated: false, redirectTo: "/login" };
-  },
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return { authenticated: false, redirectTo: "/login" };
+  }
+
+  return { authenticated: true };
+},
+
 
   getIdentity: async () => {
     const user = localStorage.getItem("user");
