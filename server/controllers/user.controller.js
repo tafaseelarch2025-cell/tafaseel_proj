@@ -1,4 +1,5 @@
 import User from "../mongodb/models/user.js";
+import jwt from "jsonwebtoken";
 import cloudinary from "cloudinary";
 
 
@@ -104,46 +105,51 @@ const updateUser = async (req, res) => {
 
 
 
-// server/controllers/user.controller.js
-
-
 
 const loginUser = async (req, res) => {
-  console.log("Login request body:", req.body); // log full request
-
-  const email = req.body.email?.toString().trim();
-  const password = req.body.password?.toString().trim();
-
-  console.log("Request email:", JSON.stringify(email));
-  console.log("Request password:", JSON.stringify(password));
-
   try {
-    const user = await User.findOne({ email });
-    console.log("User from DB:", user);
-    console.log("User password from DB:", JSON.stringify(user?.password));
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password required" });
     }
 
+    const user = await User.findOne({ email: email.trim() });
+
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const savedPassword = user.password?.toString().trim();
-    if (savedPassword !== password) {
-      console.log("Password mismatch detected!");
+    // Plain text comparison (as you're currently using)
+    if (user.password.trim() !== password.trim()) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    console.log("Login successful for:", email);
-    res.status(200).json({ user });
+    // Generate JWT
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // Send back token and user info (without password)
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      },
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-
-
 export { getAllUsers, createUser, getUserInfoByID, updateUser, loginUser };
+
+

@@ -5,57 +5,45 @@ import cors from "cors";
 import connectDB from "./mongodb/connect.js";
 import userRouter from "./routes/user.routes.js";
 import projectRouter from "./routes/project.routes.js";
-import loginRouter from "./routes/user.routes.js";
+import authRouter from "./routes/auth.routes.js"; // renamed for clarity
+
 dotenv.config();
-// auth.routes.js
-
-
 
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "https://tafasee-dashbaord.netlify.app",
-      "https://www.tafaseelarch.com",
-      "https://tafaseelarch.com",
-      "http://localhost:3000",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-  })
-);
+// Allow credentials is no longer needed since we're not using cookies
+app.use(cors({
+  origin: [
+    "https://tafaseel-dashboard.netlify.app", // ✅ FIXED
+    "https://www.tafaseelarch.com",
+    "https://tafaseelarch.com",
+    "http://localhost:3000",
+    "http://localhost:5173",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
-// IMPORTANT: handle preflight
+
 app.options("*", cors());
-
 
 app.use(express.json({ limit: "200mb" }));
 
 app.get("/", (req, res) => {
-  res.send({ message: "Hello World!" });
+  res.send({ message: "Tafaseel API is running!" });
 });
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/projects", projectRouter);
-app.use("/api/v1/auth", loginRouter); 
+app.use("/api/v1/auth", authRouter); // separate auth route
 
 const startServer = async () => {
   try {
-    connectDB(process.env.MONGODB_URL, {
-      dbName: 'tafaseel_db',
-       useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
+    connectDB(process.env.MONGODB_URL);
     const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 
