@@ -41,7 +41,6 @@ export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
     const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login", {
       method: "POST",
-      credentials: 'include',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });

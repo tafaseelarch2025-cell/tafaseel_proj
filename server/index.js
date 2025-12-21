@@ -5,6 +5,7 @@ import cors from "cors";
 import connectDB from "./mongodb/connect.js";
 import userRouter from "./routes/user.routes.js";
 import projectRouter from "./routes/project.routes.js";
+import authRouter from "./routes/auth.routes.js"; // renamed for clarity
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ const app = express();
 // Allow credentials is no longer needed since we're not using cookies
 app.use(cors({
   origin: [
-    "https://tafasee-dashbaord.netlify.app", // ✅ FIXED
+    "https://tafasee-dashbaord.netlify.app",
     "https://www.tafaseelarch.com",
     "https://tafaseelarch.com",
     "http://localhost:3000",
@@ -22,7 +23,6 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
 
 app.options("*", cors());
 
@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/projects", projectRouter);
-app.use("/api/v1/auth", userRouter); // separate auth route
+app.use("/api/v1/auth", authRouter); // separate auth route
 
 const startServer = async () => {
   try {
