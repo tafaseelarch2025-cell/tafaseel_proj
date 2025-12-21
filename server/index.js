@@ -12,18 +12,23 @@ dotenv.config();
 
 
 const app = express();
+
 app.use(
   cors({
     origin: [
       "https://tafasee-dashbaord.netlify.app",
       "https://www.tafaseelarch.com",
       "https://tafaseelarch.com",
-      "http://localhost:3000"
+      "http://localhost:3000",
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
+
+// IMPORTANT: handle preflight
+app.options("*", cors());
+
 
 app.use(express.json({ limit: "200mb" }));
 
