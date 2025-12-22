@@ -29,6 +29,7 @@ app.use(
       "https://www.tafaseelarch.com",
       "https://tafaseelarch.com",
       "https://tafasee-dashbaord.netlify.app",
+      "http://localhost:3000"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],

@@ -3,160 +3,183 @@ import cloudinary from "cloudinary";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-/* ==========================
-   CLOUDINARY CONFIG
-========================== */
-cloudinary.v2.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
-/* ==========================
-   GET ALL USERS
-========================== */
-export const getAllUsers = async (req, res) => {
+
+// GET all users
+const getAllUsers = async (req, res) => {
   try {
     const limit = parseInt(req.query._end) || 10;
-    const users = await User.find().limit(limit).select("-password");
+    const users = await User.find({}).limit(limit);
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-/* ==========================
-   CREATE USER (ADMIN / DEFAULT)
-========================== */
-export const createUser = async (req, res) => {
+// CREATE or RETURN default static user
+
+// CREATE or RETURN default static user
+/*  const createUser = async (req, res) => {
   try {
     const { name, email, avatar, password } = req.body;
 
-    const finalEmail = (email || "tafaseel.arch2025@gmail.com").trim();
-    const finalPassword = password || "T@f@seel2025";
+    const defaultUser = {
+      name: (name || "Admin").trim(),
+      email: (email || "tafaseel.arch2025@gmail.com").trim(),
+      avatar: (avatar || "https://i.pravatar.cc/150?img=2").trim(),
+      password: password ? password.trim() : "T@f@seel2025",
+    };
 
-    let user = await User.findOne({ email: finalEmail });
+    let user = await User.findOne({ email: defaultUser.email });
 
     if (!user) {
-      const hashedPassword = await bcrypt.hash(finalPassword, 10);
-
-      user = await User.create({
-        name: name || "Admin",
-        email: finalEmail,
-        avatar: avatar || "https://i.pravatar.cc/150?img=2",
-        password: hashedPassword,
-      });
+      user = await User.create(defaultUser);
     }
 
-    res.status(200).json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/* ==========================
-   GET USER BY ID
-========================== */
-export const getUserInfoByID = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+ */
 
-/* ==========================
-   UPDATE USER
-========================== */
-export const updateUser = async (req, res) => {
+// GET user by ID
+const getUserInfoByID = async (req, res) => {
   try {
-    const { name, email, avatar, password } = req.body;
-    const updateData = { name, email };
+    const { id } = req.params;
 
-    if (avatar?.startsWith("data:image")) {
-      const upload = await cloudinary.v2.uploader.upload(avatar, {
-        folder: "avatars",
-      });
-      updateData.avatar = upload.secure_url;
-    } else if (avatar) {
-      updateData.avatar = avatar;
+    const user = await User.findById(id);
+
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ message: "User not found" });
     }
-
-    if (password) {
-      updateData.password = await bcrypt.hash(password.trim(), 10);
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    ).select("-password");
-
-    if (!updatedUser)
-      return res.status(404).json({ message: "User not found" });
-
-    res.status(200).json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-/* ==========================
-   LOGIN USER (JWT + COOKIE)
-========================== */
-export const loginUser = async (req, res) => {
-  const email = req.body.email?.trim();
-  const password = req.body.password?.trim();
+// UPDATE user profile
 
-  if (!email || !password)
-    return res.status(400).json({ message: "Email and password required" });
+// Configure Cloudinary
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-  const user = await User.findOne({ email });
-  if (!user)
-    return res.status(401).json({ message: "Invalid credentials" });
+const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, avatar, password } = req.body;
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match)
-    return res.status(401).json({ message: "Invalid credentials" });
+    const updateData = { name, email };
 
-  const token = jwt.sign(
-    { id: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
+    // Handle avatar upload to Cloudinary if it's a base64 string
+    if (avatar && avatar.startsWith("data:image")) {
+      const uploadedImage = await cloudinary.v2.uploader.upload(avatar, {
+        folder: "avatars", // optional folder
+      });
+      updateData.avatar = uploadedImage.secure_url;
+    } else if (avatar) {
+      // If avatar is already a URL, just save it
+      updateData.avatar = avatar;
+    }
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    // Include password if provided
+    if (password && password.trim() !== "") {
+      updateData.password = password.trim(); // consider hashing if using plaintext
+    }
 
-  res.status(200).json({
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-    },
-  });
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
-/* ==========================
-   LOGOUT
-========================== */
-export const logoutUser = async (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
-  res.status(200).json({ message: "Logged out" });
+
+
+
+
+// LOGIN USER
+// CREATE OR GET DEFAULT USER (hashed password)
+const createUser = async (req, res) => {
+  try {
+    const { name, email, avatar, password } = req.body;
+
+    const defaultUser = {
+      name: (name || "Admin").trim(),
+      email: (email || "tafaseel.arch2025@gmail.com").trim(),
+      avatar: (avatar || "https://i.pravatar.cc/150?img=2").trim(),
+      password: password ? password.trim() : "T@f@seel2025",
+    };
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(defaultUser.password, 10);
+
+    let user = await User.findOne({ email: defaultUser.email });
+
+    if (!user) {
+      user = await User.create({ ...defaultUser, password: hashedPassword });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Create user error:", error);
+    res.status(500).json({ message: error.message });
+  }
 };
+
+// LOGIN USER
+const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password)
+      return res.status(400).json({ message: "Email and password required" });
+
+    const user = await User.findOne({ email });
+    console.log({ email, userExists: !!user });
+
+    if (!user)
+      return res.status(401).json({ message: "Invalid credentials" });
+
+    // Compare password with hashed password
+    const match = await bcrypt.compare(password, user.password);
+    if (!match)
+      return res.status(401).json({ message: "Invalid credentials" });
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(200).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+      },
+      token,
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+
+
+
+
+export { getAllUsers, createUser, getUserInfoByID, updateUser, loginUser };

@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Refine, AuthProvider, OnErrorResponse } from "@refinedev/core";
-import dataProvider from "@refinedev/simple-rest";
+// import dataProvider from "@refinedev/simple-rest";
 import {
     RefineSnackbarProvider,
     notificationProvider,
@@ -20,6 +20,8 @@ import { createTheme, ThemeProvider } from "@mui/material";
 import WorkOutline from "@mui/icons-material/WorkOutline";      // Projects
 import PersonOutline from "@mui/icons-material/PersonOutline";  // Profile
 
+import simpleRestProvider from "@refinedev/simple-rest";
+import axios from "axios";
 import { ColorModeContextProvider } from "contexts";  // Your context
 
 import {
@@ -37,10 +39,12 @@ import ProtectedRoute from "components/ProtectedRoute";
 import { Header, Sider } from "components/layout";
 
 // ----------------- AUTH PROVIDER -----------------
+// const API_URL = "http://localhost:8080/api/v1"
+
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
 
-    const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login", {
+    const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -78,6 +82,26 @@ export const authProvider: AuthProvider = {
 };
 
 
+const API_URL = "https://tafaseel-project.onrender.com/api/v1";
+
+
+
+ const axiosInstance = axios.create();
+
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+export const dataProvider = simpleRestProvider(API_URL, axiosInstance);
+
+
+
 
 // ----------------- THEME -----------------
 const lightTheme = createTheme({ palette: { mode: "light" } });
@@ -96,7 +120,7 @@ const App: React.FC = () => {
             <Refine
               routerProvider={routerBindings}
               authProvider={authProvider}
-              dataProvider={dataProvider("https://tafaseel-project.onrender.com/api/v1")}
+              dataProvider={dataProvider}
               notificationProvider={notificationProvider}
               resources={[
                 {
