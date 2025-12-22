@@ -149,6 +149,7 @@ const App: React.FC = () => {
                 title: {
                   text: "Tafaseel",
                 },
+                disableTelemetry: true,
               }}
             >
               <Routes>
