@@ -39,19 +39,25 @@ import ProtectedRoute from "components/ProtectedRoute";
 import { Header, Sider } from "components/layout";
 
 // ----------------- AUTH PROVIDER -----------------
-// const API_URL = "http://localhost:8080/api/v1"
+
+const API_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://tafaseel-project.onrender.com/api/v1"
+    : "http://localhost:8080/api/v1";
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
-
     const res = await fetch(`${API_URL}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
+      credentials: "include", // important for cookies if backend uses them
     });
+
     const data = await res.json();
     if (!res.ok || !data.user) throw new Error(data.message || "Login failed");
 
+    // Store token in localStorage
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -64,11 +70,10 @@ export const authProvider: AuthProvider = {
     return { success: true, redirectTo: "/login" };
   },
 
-  check: async () => {
-    return localStorage.getItem("token")
+  check: async () =>
+    localStorage.getItem("token")
       ? { authenticated: true }
-      : { authenticated: false, redirectTo: "/login" };
-  },
+      : { authenticated: false, redirectTo: "/login" },
 
   getIdentity: async () => {
     const user = localStorage.getItem("user");
@@ -76,25 +81,26 @@ export const authProvider: AuthProvider = {
   },
 
   getPermissions: async () => null,
-  onError: function (error: any): Promise<OnErrorResponse> {
-    throw new Error("Function not implemented.");
-  }
+  onError: async (error: any) => {
+    console.error("Auth error:", error);
+    throw error;
+  },
 };
 
 
-const API_URL = "https://tafaseel-project.onrender.com/api/v1";
+
+//const API_URL = "https://tafaseel-project.onrender.com/api/v1";
 
 
 
- const axiosInstance = axios.create();
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // important for cookies
+});
 
 axiosInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
+ // const token = localStorage.getItem("token");
+  //if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 

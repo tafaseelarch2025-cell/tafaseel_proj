@@ -143,41 +143,58 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password)
-      return res.status(400).json({ message: "Email and password required" });
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
 
-    const user = await User.findOne({ email });
+    // Find user
+    const user = await User.findOne({ email }).select("+password"); // ensure password is selected if it's excluded by default
+
     console.log({ email, userExists: !!user });
 
-    if (!user)
+    if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    // Compare password with hashed password
-    const match = await bcrypt.compare(password, user.password);
-    if (!match)
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
+    }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+    // Generate JWT
+    const token = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    // Set HttpOnly, Secure cookie
+    res.cookie("token", token, {
+      httpOnly: true,                               // Critical: prevents JS access (XSS protection)
+      secure: process.env.NODE_ENV === "production", // true on Render (HTTPS)
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      // "none" + secure is required if frontend is on different domain (e.g. Vercel vs Render)
+      maxAge: 7 * 24 * 60 * 60 * 1000,               // 7 days in milliseconds
+      path: "/",
     });
 
+    // Respond with user data only (no token)
     res.status(200).json({
+      success: true,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         avatar: user.avatar,
       },
-      token,
     });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
-
 
 
 
