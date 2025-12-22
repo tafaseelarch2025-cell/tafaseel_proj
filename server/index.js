@@ -20,7 +20,7 @@ app.set("trust proxy", 1);
 
 app.use(cors({
   origin: [
-    "https://tafaseel-proj.vercel.app",
+    "https://tafaseel-proj.vercel.app",  
     "http://localhost:3000",
        "https://www.tafaseelarch.com",
   "https://tafaseelarch.com",

@@ -83,7 +83,6 @@ export const authProvider: AuthProvider = {
 };
 
 
-//const API_URL = "https://tafaseel-project.onrender.com/api/v1";
 
 
 
@@ -154,19 +153,16 @@ const App: React.FC = () => {
                   path="/"
                   element={
                     <ThemedLayoutV2 Sider={Sider} Header={Header}>
-                      <ProtectedRoute>
-                        <Home />
-                      </ProtectedRoute>
-                    </ThemedLayoutV2>
+  <Home />
+</ThemedLayoutV2>
+
                   }
                 />
                 <Route
                   path="/projects"
                   element={
                     <ThemedLayoutV2 Sider={Sider} Header={Header}>
-                      <ProtectedRoute>
                         <AllProjects />
-                      </ProtectedRoute>
                     </ThemedLayoutV2>
                   }
                 />
@@ -174,9 +170,7 @@ const App: React.FC = () => {
                   path="/projects/create"
                   element={
                     <ThemedLayoutV2 Sider={Sider} Header={Header}>
-                      <ProtectedRoute>
                         <CreateProject />
-                      </ProtectedRoute>
                     </ThemedLayoutV2>
                   }
                 />
@@ -184,9 +178,7 @@ const App: React.FC = () => {
                   path="/projects/edit/:id"
                   element={
                     <ThemedLayoutV2 Sider={Sider} Header={Header}>
-                      <ProtectedRoute>
                         <EditProject />
-                      </ProtectedRoute>
                     </ThemedLayoutV2>
                   }
                 />
@@ -194,9 +186,7 @@ const App: React.FC = () => {
                   path="/projects/show/:id"
                   element={
                     <ThemedLayoutV2 Sider={Sider} Header={Header}>
-                      <ProtectedRoute>
                         <ProjectDetails />
-                      </ProtectedRoute>
                     </ThemedLayoutV2>
                   }
                 />
@@ -204,9 +194,7 @@ const App: React.FC = () => {
                   path="/my-profile"
                   element={
                     <ThemedLayoutV2 Sider={Sider} Header={Header}>
-                      <ProtectedRoute>
                         <MyProfile />
-                      </ProtectedRoute>
                     </ThemedLayoutV2>
                   }
                 />
