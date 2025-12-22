@@ -37,7 +37,7 @@ const API_URL = process.env.REACT_APP_API_URL!;
 // ----------------- AUTH PROVIDER -----------------
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
-    const res = await fetch(`${API_URL}/login`, {
+    const res = await fetch(`${API_URL}/users/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
