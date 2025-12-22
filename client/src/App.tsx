@@ -47,17 +47,15 @@ const API_URL =
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
-    const res = await fetch(`${API_URL}/auth/login`, {
+    const res = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
-      credentials: "include", // important for cookies if backend uses them
     });
 
     const data = await res.json();
-    if (!res.ok || !data.user) throw new Error(data.message || "Login failed");
+    if (!res.ok) throw new Error(data.message);
 
-    // Store token in localStorage
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -65,28 +63,25 @@ export const authProvider: AuthProvider = {
   },
 
   logout: async () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.clear();
     return { success: true, redirectTo: "/login" };
   },
 
-  check: async () =>
-    localStorage.getItem("token")
+  check: async () => {
+    await new Promise((r) => setTimeout(r, 50));
+    return localStorage.getItem("token")
       ? { authenticated: true }
-      : { authenticated: false, redirectTo: "/login" },
+      : { authenticated: false, redirectTo: "/login" };
+  },
 
   getIdentity: async () => {
     const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
   },
-
-  getPermissions: async () => null,
-  onError: async (error: any) => {
-    console.error("Auth error:", error);
-    throw error;
-  },
+  onError: function (error: any): Promise<OnErrorResponse> {
+    throw new Error("Function not implemented.");
+  }
 };
-
 
 
 //const API_URL = "https://tafaseel-project.onrender.com/api/v1";
@@ -95,7 +90,7 @@ export const authProvider: AuthProvider = {
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // important for cookies
+  // withCredentials: true, // important for cookies
 });
 
 axiosInstance.interceptors.request.use((config) => {

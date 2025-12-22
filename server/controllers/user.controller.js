@@ -184,7 +184,7 @@ res.setHeader('Set-Cookie', res.getHeader('Set-Cookie') + '; Partitioned');
 
 
     // Respond with user data only (no token)
-    res.status(200).json({
+    /* res.status(200).json({
       success: true,
       token,
       user: {
@@ -193,7 +193,7 @@ res.setHeader('Set-Cookie', res.getHeader('Set-Cookie') + '; Partitioned');
         email: user.email,
         avatar: user.avatar,
       },
-    });
+    }); */
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });

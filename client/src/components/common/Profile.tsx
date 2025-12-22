@@ -66,7 +66,7 @@ const Profile = ({ userId, type }: ProfileProps) => {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editableData),
-        credentials: "include"
+        // credentials: "include"
       });
 
       if (!res.ok) {
