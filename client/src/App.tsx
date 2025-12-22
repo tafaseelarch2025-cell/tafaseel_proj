@@ -40,10 +40,7 @@ import { Header, Sider } from "components/layout";
 
 // ----------------- AUTH PROVIDER -----------------
 
-const API_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://tafaseel-project.onrender.com/api/v1"
-    : "http://localhost:8080/api/v1";
+const API_URL = process.env.REACT_APP_API_URL!;
 
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
