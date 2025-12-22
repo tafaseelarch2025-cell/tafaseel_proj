@@ -39,6 +39,10 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  next();
+});
 // ROUTES
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Tafaseel API is running 🚀" });
