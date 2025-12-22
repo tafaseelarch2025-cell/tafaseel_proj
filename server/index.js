@@ -15,31 +15,24 @@ const app = express();
 app.set("trust proxy", 1);
 
 // MIDDLEWARES
-
-
-
 app.use(cors({
   origin: [
     "https://tafaseel-proj.vercel.app",  
     "http://localhost:3000",
-       "https://www.tafaseelarch.com",
-  "https://tafaseelarch.com",
+    "https://www.tafaseelarch.com",
+    "https://tafaseelarch.com",
   ],
 }));
-
 app.use(express.json({ limit: "20mb" }));
 app.use(cookieParser());
 
-app.use("/api/v1", userRouter);
-app.use("/api/v1/projects", projectRouter);
-
 // ROUTES
+app.use("/api/v1/users", userRouter);       // ✅ Mount users under /users
+app.use("/api/v1/projects", projectRouter); // ✅ Mount projects under /projects
+
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Tafaseel API is running 🚀" });
 });
-
-app.use("/api/v1", userRouter);
-app.use("/api/v1/projects", projectRouter);
 
 // START SERVER
 const startServer = async () => {
