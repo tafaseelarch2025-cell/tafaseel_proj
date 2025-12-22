@@ -19,6 +19,8 @@ router.post("/login", loginUser);
 ========================== */
 router.get("/", getAllUsers);
 router.post("/", createUser);
+
+/* Dynamic routes must come last */
 router.get("/:id", getUserInfoByID);
 router.put("/:id", updateUser);
 
