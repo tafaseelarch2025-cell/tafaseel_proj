@@ -30,15 +30,16 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // curl/Postman or mobile apps
+      if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
       callback(new Error("Not allowed by CORS"));
     },
-    credentials: true, // important for cookies or auth headers
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
 
+// ADD THIS LINE EXACTLY HERE 👇
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   next();
