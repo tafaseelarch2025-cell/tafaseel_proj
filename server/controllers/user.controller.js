@@ -170,15 +170,15 @@ const loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // Set HttpOnly, Secure cookie
-    res.cookie("token", token, {
-      httpOnly: true,                               // Critical: prevents JS access (XSS protection)
-      secure: process.env.NODE_ENV === "production", // true on Render (HTTPS)
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      // "none" + secure is required if frontend is on different domain (e.g. Vercel vs Render)
-      maxAge: 7 * 24 * 60 * 60 * 1000,               // 7 days in milliseconds
-      path: "/",
-    });
+  res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,          // ✅ REQUIRED
+  sameSite: "none",      // ✅ Cross-site cookie
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "/",
+});
+
+
 
     // Respond with user data only (no token)
     res.status(200).json({
