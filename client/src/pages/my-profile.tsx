@@ -26,7 +26,7 @@ const MyProfile: React.FC = () => {
 
   return (
     <Profile
-      userId={user._id}
+      userId={user.id}
     
       type="Admin"
     />

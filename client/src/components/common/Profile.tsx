@@ -121,35 +121,37 @@ const Profile = ({ userId, type }: ProfileProps) => {
           {/* Profile fields */}
           <Stack flex={1} direction="column" gap={2.5}>
             {Object.keys(editableData).map((key) => {
-              if (key === "_id" || key === "avatar") return null;
+  // Hide internal fields
+  if (["_id", "avatar", "__v", "password"].includes(key)) return null;
 
-              const IconMap: Record<string, JSX.Element> = {
-                email: <Email sx={{ color: "#11142D" }} />,
-                phone: <Phone sx={{ color: "#11142D" }} />,
-                address: <Place sx={{ color: "#11142D" }} />,
-              };
+  const IconMap: Record<string, JSX.Element> = {
+    email: <Email sx={{ color: "#11142D" }} />,
+    phone: <Phone sx={{ color: "#11142D" }} />,
+    address: <Place sx={{ color: "#11142D" }} />,
+  };
 
-              return (
-                <Stack key={key} direction="column" gap={1}>
-                  <Typography fontSize={14} fontWeight={500} color="#808191">
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                  </Typography>
-                  <Box display="flex" flexDirection="row" alignItems="center" gap="10px">
-                    {IconMap[key] || null}
-                    {isEditing ? (
-                      <TextField
-                        value={editableData[key] || ""}
-                        onChange={(e) => handleChange(key, e.target.value)}
-                      />
-                    ) : (
-                      <Typography fontSize={14} color="#11142D" noWrap>
-                        {editableData[key]}
-                      </Typography>
-                    )}
-                  </Box>
-                </Stack>
-              );
-            })}
+  return (
+    <Stack key={key} direction="column" gap={1}>
+      <Typography fontSize={14} fontWeight={500} color="#808191">
+        {key.charAt(0).toUpperCase() + key.slice(1)}
+      </Typography>
+      <Box display="flex" flexDirection="row" alignItems="center" gap="10px">
+        {IconMap[key] || null}
+        {isEditing ? (
+          <TextField
+            value={editableData[key] || ""}
+            onChange={(e) => handleChange(key, e.target.value)}
+          />
+        ) : (
+          <Typography fontSize={14} color="#11142D" noWrap>
+            {editableData[key]}
+          </Typography>
+        )}
+      </Box>
+    </Stack>
+  );
+})}
+
 
             <Stack direction="row" gap="10px" mt={2}>
               <Button
