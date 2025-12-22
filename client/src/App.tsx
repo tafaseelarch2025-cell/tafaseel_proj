@@ -115,7 +115,6 @@ const App: React.FC = () => {
         <CssBaseline />
         <GlobalStyles styles={{ html: { WebkitFontSmoothing: "auto" } }} />
         <RefineSnackbarProvider>
-          <BrowserRouter>
             <Refine
               routerProvider={routerBindings}
               authProvider={authProvider}
@@ -204,7 +203,6 @@ const App: React.FC = () => {
               <DocumentTitleHandler handler={() => "Tafaseel"} />
               <UnsavedChangesNotifier />
             </Refine>
-          </BrowserRouter>
         </RefineSnackbarProvider>
       </ThemeProvider>
     </ColorModeContextProvider>
