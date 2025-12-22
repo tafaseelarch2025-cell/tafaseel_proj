@@ -39,6 +39,7 @@ import { Header, Sider } from "components/layout";
 // ----------------- AUTH PROVIDER -----------------
 export const authProvider: AuthProvider = {
   login: async ({ email, password }) => {
+
     const res = await fetch("https://tafaseel-project.onrender.com/api/v1/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
