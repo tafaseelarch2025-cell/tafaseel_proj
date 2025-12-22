@@ -75,9 +75,11 @@ export const authProvider: AuthProvider = {
     const user = localStorage.getItem("user");
     return user ? JSON.parse(user) : null;
   },
-  onError: function (error: any): Promise<OnErrorResponse> {
-    throw new Error("Function not implemented.");
-  }
+  onError: async (error) => {
+  console.error(error);
+  return {};
+}
+
 };
 
 

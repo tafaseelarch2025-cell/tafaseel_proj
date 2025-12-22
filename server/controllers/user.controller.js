@@ -143,49 +143,23 @@ const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
-    // Find user
-    const user = await User.findOne({ email }).select("+password"); // ensure password is selected if it's excluded by default
-
-    console.log({ email, userExists: !!user });
-
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Generate JWT
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-  res.cookie("token", token, {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  path: "/",
-});
-
-// Manually add Partitioned (case-sensitive)
-res.setHeader('Set-Cookie', res.getHeader('Set-Cookie') + '; Partitioned');
-
-
-
-    // Respond with user data only (no token)
-    /* res.status(200).json({
-      success: true,
+    return res.status(200).json({
       token,
       user: {
         id: user._id,
@@ -193,12 +167,14 @@ res.setHeader('Set-Cookie', res.getHeader('Set-Cookie') + '; Partitioned');
         email: user.email,
         avatar: user.avatar,
       },
-    }); */
+    });
   } catch (error) {
-    console.error("Login error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
 
 
 
