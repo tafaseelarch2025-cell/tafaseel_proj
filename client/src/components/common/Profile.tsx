@@ -26,10 +26,13 @@ const Profile = ({ userId, type }: ProfileProps) => {
   const [loading, setLoading] = useState(false);
   const [editableData, setEditableData] = useState<UserData>({} as UserData);
 
+  const API_URL = process.env.REACT_APP_API_URL!;
+
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(`https://tafaseel-project.onrender.com/api/v1/users/${userId}`);
+        const res = await fetch(`${API_URL}/users/${userId}`);
         if (!res.ok) throw new Error("Failed to fetch user data");
         const data: UserData = await res.json();
         setUserData(data);
@@ -62,7 +65,7 @@ const Profile = ({ userId, type }: ProfileProps) => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`https://tafaseel-project.onrender.com/api/v1/users/${userId}`, {
+      const res = await fetch(`${API_URL}/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editableData),
