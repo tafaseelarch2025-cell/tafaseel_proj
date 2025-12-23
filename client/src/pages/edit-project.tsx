@@ -91,58 +91,52 @@ const { data, isLoading } = useGetDesignById(id as string);
 
   // Handle new image uploads (converted to base64)
   const handleImageChange = async (
-    files: FileList | null,
-    type: "projectImages" 
-  ) => {
-    if (!files || files.length === 0) return;
+  files: FileList | null,
+  type: "projectImages"
+) => {
+  if (!files || files.length === 0) return;
 
-    const readFile = (file: File): Promise<string> =>
-      new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(file);
-      });
+  const uploadedImgs = await Promise.all(
+    Array.from(files).map(async (file) => {
+      // Prepare form data for Cloudinary
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "projects"); // Make sure your preset is correct
 
-    /* if (type === "backgroundImage") {
-      const file = files[0];
-      const url = await readFile(file);
-
-      setProjectImages((prev) => ({
-        ...prev,
-        backgroundImage: { name: file.name, url },
-      }));
-    } else { */
-      const newImgs = await Promise.all(
-        Array.from(files).map(async (file) => ({
-          name: file.name,
-          url: await readFile(file),
-        }))
+      // Upload to Cloudinary
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
       );
 
-      setProjectImages((prev) => ({
-        ...prev,
-        projectImages: [...prev.projectImages, ...newImgs],
-      }));
-    // }
-  };
+      const data = await res.json();
 
-  // Remove Image
-  const handleImageRemove = (
-    index: number,
-    type: "projectImages" 
-  ) => {
-    /* if (type === "backgroundImage") {
-      setProjectImages((prev) => ({
-        ...prev,
-        backgroundImage: { name: "", url: "" },
-      }));
-    } else { */
-      setProjectImages((prev) => ({
-        ...prev,
-        projectImages: prev.projectImages.filter((_, i) => i !== index),
-      }));
-   // }
-  };
+      return {
+        name: file.name,
+        url: data.secure_url,
+      };
+    })
+  );
+
+  setProjectImages((prev) => ({
+    ...prev,
+    projectImages: [...prev.projectImages, ...uploadedImgs],
+  }));
+};
+
+// Remove Image
+const handleImageRemove = (
+  index: number,
+  type: "projectImages"
+) => {
+  setProjectImages((prev) => ({
+    ...prev,
+    projectImages: prev.projectImages.filter((_, i) => i !== index),
+  }));
+};
 
   // Submit Form
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
