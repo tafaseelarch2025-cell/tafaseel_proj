@@ -68,7 +68,6 @@ const createProject = async (req, res) => {
   try {
     const { name, category, email, images } = req.body;
     const projectImages = images?.projectImages || [];
-   // const backgroundImage = images?.backgroundImage;
 
     // Validate required fields
     if (!name?.trim() || !category || !email) {
@@ -81,12 +80,7 @@ const createProject = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    // Find or create user
-  /*   let user = await User.findOne({ email }).session(session);
-    if (!user) {
-      user = await User.create([{ email, allProjects: [] }], { session });
-      user = user[0];
-    } */
+   
 
     // Upload project images to Cloudinary
     const uploadedProjectImages = await Promise.all(
@@ -94,9 +88,7 @@ const createProject = async (req, res) => {
     );
     const projectImageUrls = uploadedProjectImages.map((img) => img.secure_url);
 
-    // Upload background image
-   // const uploadedBg = await cloudinary.uploader.upload(backgroundImage);
-    const bgUrl = uploadedBg.secure_url;
+    
 
     // Create project
     const newProject = await Project.create(
@@ -105,16 +97,11 @@ const createProject = async (req, res) => {
         category,
         images: {
           projectImages: projectImageUrls,
-        //  backgroundImage: bgUrl,
         },
-        // creator: user._id,
       }],
       { session }
     );
 
-    // Link project to user
-   /*  user.allProjects.push(newProject[0]._id);
-    await user.save({ session }); */
 
     await session.commitTransaction();
     session.endSession();
@@ -135,7 +122,6 @@ const updateProject = async (req, res) => {
       name,
       category,
       projectImages,
-    //  backgroundImage,
      
     } = req.body;
 
@@ -161,12 +147,7 @@ const updateProject = async (req, res) => {
       imageUrls = uploadedImages.map((image) => image.url);
     }
 
-    // Handle background image update
-   /*  let backImageUrl = "";
-    if (backgroundImage && !backgroundImage.startsWith("http")) {
-      const uploadedBackImage = await cloudinary.uploader.upload(backgroundImage);
-      backImageUrl = uploadedBackImage.url;
-    } */
+   
 
 
     // Update the peoject with the new data and delete old image URLs
@@ -178,7 +159,6 @@ const updateProject = async (req, res) => {
        
         images: {
           projectImages: imageUrls.length > 0 ? imageUrls : existingProject.images.projectImages,
-         // backgroundImage: backImageUrl || existingProject.images.backgroundImage,
         },
        
        
@@ -223,8 +203,7 @@ const deleteProject = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    // Extract public IDs
-   // const bgId = getPublicIdFromUrl(project.images.backgroundImage);
+   
 
     const projectImagesIds = project.images.projectImages.map((url) =>
       getPublicIdFromUrl(url)
@@ -234,7 +213,6 @@ const deleteProject = async (req, res) => {
     await Project.findByIdAndDelete(id, { session });
 
     // Delete Cloudinary assets
-    await cloudinary.uploader.destroy(bgId);
 
     await Promise.all(
       projectImagesIds.map((publicId) =>
