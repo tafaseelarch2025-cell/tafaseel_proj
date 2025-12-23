@@ -151,20 +151,84 @@ const updateProject = async (req, res) => {
 
 
     // Update the peoject with the new data and delete old image URLs
+    const updateProject = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, category, projectImages } = req.body;
+
+    if (!name?.trim() || !category) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    // Fetch existing project
+    const existingProject = await Project.findById(id);
+    if (!existingProject) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ message: "Project not found" });
+    }
+
+    // Separate new images (base64) from existing URLs
+    const newImages = projectImages.filter(img => !img.startsWith("http"));
+    const existingImages = projectImages.filter(img => img.startsWith("http"));
+
+    // Upload new images to Cloudinary
+    const uploadedImages = await Promise.all(
+      newImages.map(img => cloudinary.uploader.upload(img, { folder: "projects" }))
+    );
+
+    const newImageUrls = uploadedImages.map(img => img.secure_url);
+
+    // Combine existing + new uploaded images
+    const finalImages = [...existingImages, ...newImageUrls];
+
+    // Find removed images to delete from Cloudinary
+    const removedImages = existingProject.images.projectImages.filter(
+      img => !finalImages.includes(img)
+    );
+
+    // Delete removed images from Cloudinary
+    await Promise.all(
+      removedImages.map(img => {
+        const publicId = getPublicIdFromUrl(img);
+        return cloudinary.uploader.destroy(publicId);
+      })
+    );
+
+    // Update project in DB
     const updatedProject = await Project.findByIdAndUpdate(
-      { _id: id },
+      id,
       {
         name,
         category,
-       
         images: {
-          projectImages: imageUrls.length > 0 ? imageUrls : existingProject.images.projectImages,
-        },
-       
-       
+          projectImages: finalImages
+        }
       },
-      { new: true }
+      { new: true, session }
     );
+
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({ message: "Project updated successfully", project: updatedProject });
+
+  } catch (error) {
+    console.error("Update project error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Helper function to extract publicId from Cloudinary URL
+const getPublicIdFromUrl = (url) => {
+  const parts = url.split('/');
+  const publicIdWithExtension = parts[parts.length - 1];
+  return publicIdWithExtension.split('.')[0];
+};
+
    
     // Optionally, delete old images from Cloudinary
     if (imageUrls.length > 0) {
