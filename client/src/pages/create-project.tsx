@@ -24,15 +24,15 @@ console.log(user?.email);
 
   const [projectImages, setProjectImages] = useState<{
     projectImages: ImageItem[];
-    backgroundImage: ImageItem;
+  //  backgroundImage: ImageItem;
   }>({
     projectImages: [],
-    backgroundImage: { name: "", url: "" },
+ //   backgroundImage: { name: "", url: "" },
   });
 
   const handleImageChange = async (
   files: FileList | null,
-  type: "projectImages" | "backgroundImage"
+  type: "projectImages" 
 ) => {
   if (!files?.length) return;
 
@@ -73,31 +73,31 @@ console.log(user?.email);
       reader.readAsDataURL(file);
     });
 
-  if (type === "backgroundImage") {
+  /* if (type === "backgroundImage") {
     const resized = await resizeImage(fileArray[0]);
     setProjectImages((prev) => ({
       ...prev,
       backgroundImage: resized,
     }));
-  } else {
+  } else { */
     const resizedImages = await Promise.all(fileArray.map(file => resizeImage(file)));
     setProjectImages((prev) => ({
       ...prev,
       projectImages: [...prev.projectImages, ...resizedImages],
     }));
-  }
+  // }
 };
 
 
-  const handleImageRemove = (index: number, type: "projectImages" | "backgroundImage") => {
-    if (type === "backgroundImage") {
+  const handleImageRemove = (index: number, type: "projectImages") => {
+    /* if (type === "backgroundImage") {
       setProjectImages(prev => ({ ...prev, backgroundImage: { name: "", url: "" } }));
-    } else {
+    } else { */
       setProjectImages(prev => ({
         ...prev,
         projectImages: prev.projectImages.filter((_, i) => i !== index),
       }));
-    }
+   // }
   };
 
 const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -116,7 +116,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     return;
   }
 
-  if (projectImages.projectImages.length === 0 || !projectImages.backgroundImage.url) {
+  if (projectImages.projectImages.length === 0 ) {
     alert("Please upload at least one project image and background image");
     return;
   }
@@ -128,7 +128,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     email: user.email,
     images: {
       projectImages: projectImages.projectImages.map(img => img.url),
-      backgroundImage: projectImages.backgroundImage.url,
+      // backgroundImage: projectImages.backgroundImage.url,
     },
   };
 
@@ -157,8 +157,8 @@ const isSubmitDisabled =
 
   !nameInput ||
   !categoryInput ||
-  projectImages.projectImages.length === 0 ||
-  !projectImages.backgroundImage.url;
+  projectImages.projectImages.length === 0 ;
+  //|| !projectImages.backgroundImage.url;
 
 
   return (

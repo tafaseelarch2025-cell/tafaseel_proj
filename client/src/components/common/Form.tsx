@@ -23,12 +23,14 @@ interface FormProps {
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   formLoading: boolean;
 
-  handleImageChange: (files: FileList | null, type: "projectImages" | "backgroundImage") => void;
-  handleImageRemove: (index: number, type: "projectImages" | "backgroundImage") => void;
+  // handleImageChange: (files: FileList | null, type: "projectImages" | "backgroundImage") => void;
+  // handleImageRemove: (index: number, type: "projectImages" | "backgroundImage") => void;
+   handleImageChange: (files: FileList | null, type: "projectImages") => void;
+  handleImageRemove: (index: number, type: "projectImages") => void;
 
   projectImages: {
     projectImages: ImageItem[];
-    backgroundImage: ImageItem;
+    // backgroundImage: ImageItem;
   };
 
   name: string;
@@ -110,7 +112,7 @@ const Form = ({
           </Stack>
 
           {/* Background Image */}
-          <Stack direction="column" gap={2}>
+          {/* <Stack direction="column" gap={2}>
             {projectImages.backgroundImage.url && (
               <Box position="relative">
                 <img src={projectImages.backgroundImage.url} width={200} height={200} style={{ borderRadius: 8 }} />
@@ -128,7 +130,7 @@ const Form = ({
               Upload Background Image *
               <input type="file" hidden accept="image/*" onChange={(e) => handleImageChange(e.target.files, "backgroundImage")} />
             </Button>
-          </Stack>
+          </Stack> */}
 
           <CustomButton
             type="submit"

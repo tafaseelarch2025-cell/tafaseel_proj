@@ -93,7 +93,7 @@ const Home = () => {
                 key={project._id}
                 id={project._id}
                 name={project.name}
-                backgroundImage={project.images?.backgroundImage}
+                backgroundImage={project.images?.projectImages[0]}
                 category={project.category}
               />
             ))}

@@ -17,7 +17,7 @@ const ProjectCard = ({
   id,
   name,
   category,
-  backgroundImage,
+  // backgroundImage,
  
 }: ProjectCardProps) => {
 
@@ -38,13 +38,13 @@ const ProjectCard = ({
       }}
       elevation={0}
     >
-      <CardMedia
+     {/*  <CardMedia
         component="img"
         height={210}
         image={backgroundImage}
         alt="Property image"
         sx={{ borderRadius: 2 }}
-      />
+      /> */}
       <CardContent
         sx={{
           display: "flex",

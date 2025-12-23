@@ -28,6 +28,9 @@ const { data, isLoading } = useGetDesignById(id as string);
 
   const project = projectData?.data;
 
+  const API_URL = process.env.REACT_APP_API_URL!;
+
+
  function useGetDesignById(id: string) {
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +40,7 @@ const { data, isLoading } = useGetDesignById(id as string);
 
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/v1/projects/${id}`);
+        const res = await fetch(`${API_URL}/projects/${id}`);
         if (!res.ok) throw new Error("Project not found");
         const json = await res.json();
         setData(json);
@@ -58,10 +61,10 @@ const { data, isLoading } = useGetDesignById(id as string);
 
   const [projectImages, setProjectImages] = useState<{
     projectImages: ImageItem[];
-    backgroundImage: ImageItem;
+    // backgroundImage: ImageItem;
   }>({
     projectImages: [],
-    backgroundImage: { name: "", url: "" },
+   // backgroundImage: { name: "", url: "" },
   });
   const [category, setcategory] = useState<string>('');
   const [name, setName] = useState("");
@@ -74,12 +77,12 @@ const { data, isLoading } = useGetDesignById(id as string);
           name: url.split("/").pop()?.split(".")[0] || "image",
           url,
         })) || [],
-        backgroundImage: project.images?.backgroundImage
+        /* backgroundImage: project.images?.backgroundImage
           ? {
               name: "background",
               url: project.images.backgroundImage,
             }
-          : { name: "", url: "" },
+          : { name: "", url: "" }, */
       });
       setcategory(project?.category );
       setName(project?.name)
@@ -89,7 +92,7 @@ const { data, isLoading } = useGetDesignById(id as string);
   // Handle new image uploads (converted to base64)
   const handleImageChange = async (
     files: FileList | null,
-    type: "projectImages" | "backgroundImage"
+    type: "projectImages" 
   ) => {
     if (!files || files.length === 0) return;
 
@@ -100,7 +103,7 @@ const { data, isLoading } = useGetDesignById(id as string);
         reader.readAsDataURL(file);
       });
 
-    if (type === "backgroundImage") {
+    /* if (type === "backgroundImage") {
       const file = files[0];
       const url = await readFile(file);
 
@@ -108,7 +111,7 @@ const { data, isLoading } = useGetDesignById(id as string);
         ...prev,
         backgroundImage: { name: file.name, url },
       }));
-    } else {
+    } else { */
       const newImgs = await Promise.all(
         Array.from(files).map(async (file) => ({
           name: file.name,
@@ -120,25 +123,25 @@ const { data, isLoading } = useGetDesignById(id as string);
         ...prev,
         projectImages: [...prev.projectImages, ...newImgs],
       }));
-    }
+    // }
   };
 
   // Remove Image
   const handleImageRemove = (
     index: number,
-    type: "projectImages" | "backgroundImage"
+    type: "projectImages" 
   ) => {
-    if (type === "backgroundImage") {
+    /* if (type === "backgroundImage") {
       setProjectImages((prev) => ({
         ...prev,
         backgroundImage: { name: "", url: "" },
       }));
-    } else {
+    } else { */
       setProjectImages((prev) => ({
         ...prev,
         projectImages: prev.projectImages.filter((_, i) => i !== index),
       }));
-    }
+   // }
   };
 
   // Submit Form
@@ -153,7 +156,7 @@ const { data, isLoading } = useGetDesignById(id as string);
       return;
     }
 
-    if (projectImages.projectImages.length === 0 || !projectImages.backgroundImage.url) {
+    if (projectImages.projectImages.length === 0 ) {
       alert("Please upload at least one project image and background image");
       return;
     }
@@ -166,7 +169,7 @@ const { data, isLoading } = useGetDesignById(id as string);
           name,
           category,
           projectImages: projectImages.projectImages.map((img) => img.url),
-          backgroundImage: projectImages.backgroundImage.url,
+          // backgroundImage: projectImages.backgroundImage.url,
           email: user?.email,
         },
       },
@@ -191,8 +194,8 @@ const { data, isLoading } = useGetDesignById(id as string);
   const isSubmitDisabled =
     !nameInput ||
     !categoryInput ||
-    projectImages.projectImages.length === 0 ||
-    !projectImages.backgroundImage.url;
+    projectImages.projectImages.length === 0 ;
+   //  || !projectImages.backgroundImage.url;
 
   return (
     <Form

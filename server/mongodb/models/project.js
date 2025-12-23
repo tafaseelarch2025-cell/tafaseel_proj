@@ -6,7 +6,7 @@ const ProjectSchema = new mongoose.Schema({
   projectId: { type: String, required: true,default: () => new mongoose.Types.ObjectId().toString(), },
   name: { type: String, required: true },
  images: {
-    backgroundImage: { type: String, required: true },
+   // backgroundImage: { type: String, required: true },
     projectImages: [{ type: String, required: true }],
   },
   category: { type: String, required: true },

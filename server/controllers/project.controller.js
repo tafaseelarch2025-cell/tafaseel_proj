@@ -68,7 +68,7 @@ const createProject = async (req, res) => {
   try {
     const { name, category, email, images } = req.body;
     const projectImages = images?.projectImages || [];
-    const backgroundImage = images?.backgroundImage;
+   // const backgroundImage = images?.backgroundImage;
 
     // Validate required fields
     if (!name?.trim() || !category || !email) {
@@ -77,10 +77,7 @@ const createProject = async (req, res) => {
     if (!Array.isArray(projectImages) || projectImages.length === 0) {
       return res.status(400).json({ message: "At least one project image is required" });
     }
-    if (!backgroundImage) {
-      return res.status(400).json({ message: "Background image is required" });
-    }
-
+    
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -98,7 +95,7 @@ const createProject = async (req, res) => {
     const projectImageUrls = uploadedProjectImages.map((img) => img.secure_url);
 
     // Upload background image
-    const uploadedBg = await cloudinary.uploader.upload(backgroundImage);
+   // const uploadedBg = await cloudinary.uploader.upload(backgroundImage);
     const bgUrl = uploadedBg.secure_url;
 
     // Create project
@@ -108,7 +105,7 @@ const createProject = async (req, res) => {
         category,
         images: {
           projectImages: projectImageUrls,
-          backgroundImage: bgUrl,
+        //  backgroundImage: bgUrl,
         },
         // creator: user._id,
       }],
@@ -138,7 +135,7 @@ const updateProject = async (req, res) => {
       name,
       category,
       projectImages,
-      backgroundImage,
+    //  backgroundImage,
      
     } = req.body;
 
@@ -165,11 +162,11 @@ const updateProject = async (req, res) => {
     }
 
     // Handle background image update
-    let backImageUrl = "";
+   /*  let backImageUrl = "";
     if (backgroundImage && !backgroundImage.startsWith("http")) {
       const uploadedBackImage = await cloudinary.uploader.upload(backgroundImage);
       backImageUrl = uploadedBackImage.url;
-    }
+    } */
 
 
     // Update the peoject with the new data and delete old image URLs
@@ -181,7 +178,7 @@ const updateProject = async (req, res) => {
        
         images: {
           projectImages: imageUrls.length > 0 ? imageUrls : existingProject.images.projectImages,
-          backgroundImage: backImageUrl || existingProject.images.backgroundImage,
+         // backgroundImage: backImageUrl || existingProject.images.backgroundImage,
         },
        
        
@@ -227,7 +224,7 @@ const deleteProject = async (req, res) => {
     session.startTransaction();
 
     // Extract public IDs
-    const bgId = getPublicIdFromUrl(project.images.backgroundImage);
+   // const bgId = getPublicIdFromUrl(project.images.backgroundImage);
 
     const projectImagesIds = project.images.projectImages.map((url) =>
       getPublicIdFromUrl(url)

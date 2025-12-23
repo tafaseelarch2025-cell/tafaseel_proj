@@ -29,7 +29,7 @@ export interface ProjectProps {
   
   name: string;
   images: {
-    backgroundImage: string;
+    projectImages: string[];
   };
   category?: string; // Property type (e.g., Apartment, Villa, etc.)
   
@@ -54,19 +54,19 @@ export interface FormProps {
 
   handleImageChange: (
     files: FileList | null,
-    type: 'projectImages' | 'backgroundImage'
+    type: 'projectImages' 
   ) => void;
 
   onFinishHandler?: (data: FieldValues) => Promise<void> | void;
 
   projectImages: {
     projectImages: Array<{ name: string; url: string }>;
-    backgroundImage: { name: string; url: string } | null;  // Now optional/null
+   // backgroundImage: { name: string; url: string } | null;  // Now optional/null
   };
 
   handleImageRemove: (
     index: number,
-    type: 'projectImages' | 'backgroundImage'
+    type: 'projectImages' 
   ) => void;
 
   control?: Control<FieldValues>;
