@@ -27,6 +27,7 @@ const { data, isLoading } = useGetDesignById(id as string);
   const { mutate: updateProject, isLoading: updateLoading } = useUpdate();
 
   const project = projectData?.data;
+  const [isFeatured, setIsFeatured] = useState(false);
 
   const API_URL = process.env.REACT_APP_API_URL!;
 
@@ -85,7 +86,8 @@ const { data, isLoading } = useGetDesignById(id as string);
           : { name: "", url: "" }, */
       });
       setcategory(project?.category );
-      setName(project?.name)
+      setName(project?.name);
+      setIsFeatured(project.isFeatured || false);
     }
   }, [project]);
 
@@ -145,57 +147,56 @@ const { data, isLoading } = useGetDesignById(id as string);
   };
 
   // Submit Form
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    const name = (e.currentTarget.elements.namedItem("name") as HTMLInputElement)?.value;
-    const category = (e.currentTarget.elements.namedItem("category") as HTMLInputElement)?.value;
+  if (!name.trim() || !category.trim()) {
+    alert("Please fill name and category");
+    return;
+  }
 
-    if (!name || !category) {
-      alert("Please fill name and category");
-      return;
-    }
-
-    if (projectImages.projectImages.length === 0 ) {
-      alert("Please upload at least one project image and background image");
-      return;
-    }
-
-    updateProject(
-      {
-        resource: "projects",
-        id,
-        values: {
-          name,
-          category,
-          projectImages: projectImages.projectImages.map((img) => img.url),
-          // backgroundImage: projectImages.backgroundImage.url,
-          email: user?.email,
-        },
+  if (projectImages.projectImages.length === 0) {
+    alert("Please upload at least one project image");
+    return;
+  }
+console.log("Submitting update with values:", {
+  name,
+  category,
+  imageCount: projectImages.projectImages.length,
+  isFeatured,
+  id,
+});
+  updateProject(
+    {
+      resource: "projects",
+      id,
+      values: {
+        name,                    // ← use state
+        category,                // ← use state
+        projectImages: projectImages.projectImages.map(img => img.url),
+        email: user?.email,
+        isFeatured,              // boolean from state
       },
-      {
-        onSuccess: () => {
-          alert("Project updated successfully!");
-          navigate("/projects");
-        },
-        onError: (error) => {
-          console.error(error);
-          alert("Failed to update project");
-        },
-      }
-    );
-  };
+    },
+    {
+      onSuccess: () => {
+        alert("Project updated successfully!");
+        navigate("/projects");
+      },
+      onError: (error) => {
+        console.error("Update failed:", error);
+        alert("Failed to update project: " + (error?.message || "Unknown error"));
+      },
+    }
+  );
+};
 
   // Disable Button Condition
   const nameInput = (document.getElementsByName("name")[0] as HTMLInputElement)?.value || "";
   const categoryInput =
     (document.getElementsByName("category")[0] as HTMLInputElement)?.value || "";
 
-  const isSubmitDisabled =
-    !nameInput ||
-    !categoryInput ||
-    projectImages.projectImages.length === 0 ;
-   //  || !projectImages.backgroundImage.url;
+  const isSubmitDisabled = !name.trim() || !category.trim() || projectImages.projectImages.length === 0;
 
   return (
     <Form
@@ -210,6 +211,8 @@ name={name}
 setName={setName}
 category={category}
 setCategory={setcategory}
+isFeatured={isFeatured}        // ← pass
+      setIsFeatured={setIsFeatured}
 
 
      

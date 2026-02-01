@@ -10,6 +10,8 @@ import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import CancelIcon from "@mui/icons-material/Cancel";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 import CustomButton from "./CustomButton";
 
@@ -22,21 +24,19 @@ interface FormProps {
   type: string;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   formLoading: boolean;
-
-  // handleImageChange: (files: FileList | null, type: "projectImages" | "backgroundImage") => void;
-  // handleImageRemove: (index: number, type: "projectImages" | "backgroundImage") => void;
    handleImageChange: (files: FileList | null, type: "projectImages") => void;
   handleImageRemove: (index: number, type: "projectImages") => void;
 
   projectImages: {
     projectImages: ImageItem[];
-    // backgroundImage: ImageItem;
   };
 
   name: string;
   setName:(v: string) => void;
   category: string;
   setCategory: (v: string) => void;
+  isFeatured?: boolean;
+  setIsFeatured?: (v: boolean) => void;
 
   isSubmitDisabled: boolean;
 }
@@ -52,6 +52,8 @@ const Form = ({
   category,
   setCategory,
   setName,
+  isFeatured = false,
+  setIsFeatured,
   isSubmitDisabled,
 }: FormProps) => {
   return (
@@ -91,6 +93,19 @@ const Form = ({
               <MenuItem value="Landscape and Gardens">Landscape and Gardens</MenuItem>
             </Select>
           </FormControl>
+
+          {/* ── NEW: Featured Checkbox ── */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isFeatured}
+                onChange={(e) => setIsFeatured?.(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Feature this design on the homepage"
+            sx={{ mt: 1 }}
+          />
 
           {/* Project Images */}
           <Stack direction="column" gap={2}>

@@ -13,6 +13,7 @@ const CreateProject = () => {
 
   const [name, setName] = useState("");
 const [category, setCategory] = useState("");
+const [isFeatured, setIsFeatured] = useState(false);
 
   const navigate = useNavigate();
 const { data: user } = useGetIdentity<{ id: string; email: string; name: string; }>();
@@ -130,6 +131,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       projectImages: projectImages.projectImages.map(img => img.url),
       // backgroundImage: projectImages.backgroundImage.url,
     },
+    isFeatured,
   };
 
   mutate(
@@ -175,6 +177,8 @@ const isSubmitDisabled =
       setName={setName}
       category={category}
       setCategory={setCategory}
+      isFeatured={isFeatured}          // ← pass
+      setIsFeatured={setIsFeatured}
       
     />
   );
