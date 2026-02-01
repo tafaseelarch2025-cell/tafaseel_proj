@@ -14,6 +14,8 @@ router.route("/").get(getAllProjects);
 router.route("/:id").get(getProjectDetail);
 router.route("/").post(createProject);
 router.route("/:id").patch(updateProject);
+router.route("/:id").put(updateProject)     // ← add this
 router.route("/:id").delete(deleteProject);
+
 
 export default router;

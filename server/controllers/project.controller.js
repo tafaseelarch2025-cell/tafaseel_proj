@@ -65,105 +65,101 @@ const getProjectDetail = async (req, res) => {
 
 // Create Project
 const createProject = async (req, res) => {
+  console.log("CREATE PROJECT REQUEST RECEIVED");
+  console.log("Body:", JSON.stringify(req.body, null, 2));
+
   try {
-    const { name, category, email, images } = req.body;
+    const { name, category, email, images, isFeatured = false } = req.body;
     const projectImages = images?.projectImages || [];
 
-    // Validate required fields
+    console.log("Parsed inputs:", { name, category, email, imageCount: projectImages.length });
+
     if (!name?.trim() || !category || !email) {
       return res.status(400).json({ message: "Missing required fields" });
     }
     if (!Array.isArray(projectImages) || projectImages.length === 0) {
-      return res.status(400).json({ message: "At least one project image is required" });
+      return res.status(400).json({ message: "At least one project image required" });
     }
-    
+
     const session = await mongoose.startSession();
     session.startTransaction();
 
-   
+    console.log("Starting Cloudinary uploads...");
 
-    // Upload project images to Cloudinary
     const uploadedProjectImages = await Promise.all(
-      projectImages.map((img) => cloudinary.uploader.upload(img))
+      projectImages.map(async (img, index) => {
+        try {
+          console.log(`Uploading image ${index + 1}/${projectImages.length}`);
+          const result = await cloudinary.uploader.upload(img, { folder: "projects" });
+          console.log(`Upload success for image ${index + 1}:`, result.secure_url);
+          return result;
+        } catch (uploadErr) {
+          console.error(`Upload failed for image ${index + 1}:`, uploadErr);
+          throw uploadErr;
+        }
+      })
     );
-    const projectImageUrls = uploadedProjectImages.map((img) => img.secure_url);
 
-    
+    const projectImageUrls = uploadedProjectImages.map(img => img.secure_url);
 
-    // Create project
+    console.log("Creating project in DB...");
+
     const newProject = await Project.create(
       [{
         name,
         category,
-        images: {
-          projectImages: projectImageUrls,
-        },
+        email,
+        images: { projectImages: projectImageUrls },
+        isFeatured,
       }],
       { session }
     );
 
-
     await session.commitTransaction();
     session.endSession();
 
-    res.status(201).json({ message: "Project created successfully!", project: newProject[0] });
+    console.log("Project created successfully:", newProject[0]._id);
+
+    res.status(201).json({ 
+      message: "Project created successfully!", 
+      project: newProject[0] 
+    });
   } catch (error) {
-    console.error("Create project error:", error);
-    res.status(500).json({ message: error.message });
+    console.error("CREATE PROJECT ERROR:", error.stack || error);
+    if (error instanceof mongoose.Error.ValidationError) {
+      return res.status(400).json({ message: "Validation failed", details: error.errors });
+    }
+    res.status(500).json({ 
+      message: "Server error during project creation", 
+      error: error.message 
+    });
   }
 };
 
 
-const updateProject = async (req, res) => {
-  
-  try {
-    const { id } = req.params;
-    const {
-      name,
-      category,
-      projectImages,
-     
-    } = req.body;
-
-    const session = await Project.startSession(); // Start a session
-    session.startTransaction(); // Begin the transaction
-
-    // Fetch the existing project
-    const existingProject = await Project.findById(id);
-
-    if (!existingProject) {
-      return res.status(404).json({ message: "Project not found" });
-    }
-
-
-    // Handle projectImages update
-    let imageUrls = [];
-    if (projectImages && Array.isArray(projectImages) && projectImages.length > 0) {
-      // Only upload images that are new (not URLs)
-      const newImages = projectImages.filter(image => !image.startsWith("http"));
-      const uploadedImages = await Promise.all(
-        newImages.map((image) => cloudinary.uploader.upload(image))
-      );
-      imageUrls = uploadedImages.map((image) => image.url);
-    }
-
    
 
 
-    // Update the peoject with the new data and delete old image URLs
-    const updateProject = async (req, res) => {
+   
+const updateProject = async (req, res) => {
+  console.log("=== UPDATE PROJECT ENDPOINT REACHED ===");
+  console.log("Method:", req.method);
+  console.log("ID:", req.params.id);
+  console.log("Body:", JSON.stringify(req.body, null, 2));
+
   try {
     const { id } = req.params;
-    const { name, category, projectImages } = req.body;
+    const { name, category, projectImages, isFeatured, email } = req.body;
+
+    console.log("Received isFeatured:", isFeatured, "type:", typeof isFeatured);
 
     if (!name?.trim() || !category) {
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(400).json({ message: "Missing required fields (name or category)" });
     }
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
-    // Fetch existing project
     const existingProject = await Project.findById(id);
     if (!existingProject) {
       await session.abortTransaction();
@@ -171,80 +167,71 @@ const updateProject = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    // Separate new images (base64) from existing URLs
-    const newImages = projectImages.filter(img => !img.startsWith("http"));
-    const existingImages = projectImages.filter(img => img.startsWith("http"));
+    // Handle images
+    let finalImages = existingProject.images?.projectImages || [];
 
-    // Upload new images to Cloudinary
-    const uploadedImages = await Promise.all(
-      newImages.map(img => cloudinary.uploader.upload(img, { folder: "projects" }))
-    );
+    if (projectImages && Array.isArray(projectImages) && projectImages.length > 0) {
+      const newImages = projectImages.filter(img => !img.startsWith("http"));
+      const existingUrls = projectImages.filter(img => img.startsWith("http"));
 
-    const newImageUrls = uploadedImages.map(img => img.secure_url);
+      // Upload new (base64) images
+      const uploaded = await Promise.all(
+        newImages.map(async (img, idx) => {
+          console.log(`Uploading new image ${idx + 1}/${newImages.length}`);
+          return cloudinary.uploader.upload(img, { folder: "projects" });
+        })
+      );
 
-    // Combine existing + new uploaded images
-    const finalImages = [...existingImages, ...newImageUrls];
+      const newUrls = uploaded.map(r => r.secure_url);
+      finalImages = [...existingUrls, ...newUrls];
 
-    // Find removed images to delete from Cloudinary
-    const removedImages = existingProject.images.projectImages.filter(
-      img => !finalImages.includes(img)
-    );
+      // Delete removed images
+      const removed = existingProject.images.projectImages.filter(
+        old => !finalImages.includes(old)
+      );
 
-    // Delete removed images from Cloudinary
-    await Promise.all(
-      removedImages.map(img => {
-        const publicId = getPublicIdFromUrl(img);
-        return cloudinary.uploader.destroy(publicId);
-      })
-    );
+      if (removed.length > 0) {
+        console.log(`Deleting ${removed.length} old images from Cloudinary`);
+        await Promise.all(
+          removed.map(url => {
+            const publicId = getPublicIdFromUrl(url);
+            return cloudinary.uploader.destroy(publicId);
+          })
+        );
+      }
+    }
 
-    // Update project in DB
+    // Prepare update
+    const updateData = {
+      name,
+      category,
+      images: { projectImages: finalImages },
+      isFeatured: isFeatured !== undefined ? Boolean(isFeatured) : existingProject.isFeatured,
+    };
+
+    console.log("Updating with:", updateData);
+
     const updatedProject = await Project.findByIdAndUpdate(
       id,
-      {
-        name,
-        category,
-        images: {
-          projectImages: finalImages
-        }
-      },
+      updateData,
       { new: true, session }
     );
 
     await session.commitTransaction();
     session.endSession();
 
-    res.status(200).json({ message: "Project updated successfully", project: updatedProject });
+    console.log("Update successful:", updatedProject._id);
 
+    res.status(200).json({
+      message: "Project updated successfully",
+      project: updatedProject
+    });
   } catch (error) {
-    console.error("Update project error:", error);
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Helper function to extract publicId from Cloudinary URL
-const getPublicIdFromUrl = (url) => {
-  const parts = url.split('/');
-  const publicIdWithExtension = parts[parts.length - 1];
-  return publicIdWithExtension.split('.')[0];
-};
-
-   
-    // Optionally, delete old images from Cloudinary
-    if (imageUrls.length > 0) {
-      const oldImages = existingProject.images.projectImages.filter(image => !projectImages.includes(image));
-      await Promise.all(oldImages.map(image => {
-        const publicId = getPublicIdFromUrl(image);
-        return cloudinary.uploader.destroy(publicId);
-      }));
-    }
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(200).json({ message: "Project updated successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("UPDATE PROJECT ERROR:", error.stack || error);
+    res.status(500).json({
+      message: "Failed to update project",
+      error: error.message
+    });
   }
 };
 
