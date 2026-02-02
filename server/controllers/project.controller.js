@@ -16,11 +16,12 @@ cloudinary.config({
 const getAllProjects = async (req, res) => {
   const {
     _end,
-    _order,
+    _order = 'desc',          // ← add defaults if you want to be safe
     _start,
-    _sort,
+    _sort = 'createdAt',      // ← example default
     name_like = "",
     category = "",
+    isFeatured,               // ← add this
   } = req.query;
 
   const query = {};
@@ -33,13 +34,22 @@ const getAllProjects = async (req, res) => {
     query.name = { $regex: name_like, $options: "i" };
   }
 
+  // ── NEW: handle isFeatured ───────────────────────────────────────
+  if (isFeatured !== undefined) {
+    // Convert string "true"/"false" → real boolean
+    const featuredValue = isFeatured === 'true' || isFeatured === '1' || isFeatured === true;
+    query.isFeatured = featuredValue;   // will be true or false
+  }
+  // ─────────────────────────────────────────────────────────────────
+
   try {
-    const count = await Project.countDocuments({ query });
+    // Important: countDocuments should use the same query as find
+    const count = await Project.countDocuments(query);
 
     const projects = await Project.find(query)
-      .limit(_end)
-      .skip(_start)
-      .sort({ [_sort]: _order });
+      .limit(Number(_end) || 0)     // safer: convert to number
+      .skip(Number(_start) || 0)
+      .sort({ [_sort]: _order === 'asc' ? 1 : -1 });  // handle string sort order
 
     res.header("x-total-count", count);
     res.header("Access-Control-Expose-Headers", "x-total-count");
@@ -49,7 +59,6 @@ const getAllProjects = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 const getProjectDetail = async (req, res) => {
   const { id } = req.params;
   const projectExists = await Project.findOne({ _id: id });
