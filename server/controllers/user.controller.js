@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 
-
 // GET all users
 const getAllUsers = async (req, res) => {
   try {
@@ -16,32 +15,6 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// CREATE or RETURN default static user
-
-// CREATE or RETURN default static user
-/*  const createUser = async (req, res) => {
-  try {
-    const { name, email, avatar, password } = req.body;
-
-    const defaultUser = {
-      name: (name || "Admin").trim(),
-      email: (email || "tafaseel.arch2025@gmail.com").trim(),
-      avatar: (avatar || "https://i.pravatar.cc/150?img=2").trim(),
-      password: password ? password.trim() : "T@f@seel2025",
-    };
-
-    let user = await User.findOne({ email: defaultUser.email });
-
-    if (!user) {
-      user = await User.create(defaultUser);
-    }
-
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
- */
 
 // GET user by ID
 const getUserInfoByID = async (req, res) => {
@@ -60,39 +33,44 @@ const getUserInfoByID = async (req, res) => {
   }
 };
 
-// UPDATE user profile
 
-// Configure Cloudinary
+// CLOUDINARY CONFIG
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+
+// UPDATE USER
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, avatar, password } = req.body;
 
-    const updateData = { name, email };
+    const updateData = {
+      name,
+      email: email ? email.toLowerCase().trim() : undefined,
+    };
 
-    // Handle avatar upload to Cloudinary if it's a base64 string
+    // avatar upload
     if (avatar && avatar.startsWith("data:image")) {
       const uploadedImage = await cloudinary.v2.uploader.upload(avatar, {
-        folder: "avatars", // optional folder
+        folder: "avatars",
       });
       updateData.avatar = uploadedImage.secure_url;
     } else if (avatar) {
-      // If avatar is already a URL, just save it
       updateData.avatar = avatar;
     }
 
-    // Include password if provided
+    // FIXED: hash password instead of saving plain text
     if (password && password.trim() !== "") {
-      updateData.password = password.trim(); // consider hashing if using plaintext
+      updateData.password = await bcrypt.hash(password.trim(), 10);
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
@@ -106,29 +84,27 @@ const updateUser = async (req, res) => {
 };
 
 
-
-
-
-// LOGIN USER
-// CREATE OR GET DEFAULT USER (hashed password)
+// CREATE USER (safe version)
 const createUser = async (req, res) => {
   try {
     const { name, email, avatar, password } = req.body;
 
     const defaultUser = {
       name: (name || "Admin").trim(),
-      email: (email || "tafaseel.arch2025@gmail.com").trim(),
+      email: (email || "tafaseel.arch2025@gmail.com").toLowerCase().trim(),
       avatar: (avatar || "https://i.pravatar.cc/150?img=2").trim(),
       password: password ? password.trim() : "T@f@seel2025",
     };
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(defaultUser.password, 10);
-
     let user = await User.findOne({ email: defaultUser.email });
 
     if (!user) {
-      user = await User.create({ ...defaultUser, password: hashedPassword });
+      const hashedPassword = await bcrypt.hash(defaultUser.password, 10);
+
+      user = await User.create({
+        ...defaultUser,
+        password: hashedPassword,
+      });
     }
 
     res.status(200).json(user);
@@ -138,17 +114,22 @@ const createUser = async (req, res) => {
   }
 };
 
-// LOGIN USER
+
+// LOGIN USER (FIXED)
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email }).select("+password");
+    const normalizedEmail = email.toLowerCase().trim();
+
+    const user = await User.findOne({ email: normalizedEmail }).select("+password");
+
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
@@ -168,49 +149,53 @@ const loginUser = async (req, res) => {
         avatar: user.avatar,
       },
     });
+
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// CHANGE PASSWORD (requires old password for verification)
+
+// CHANGE PASSWORD
 const changePassword = async (req, res) => {
-  console.log("🎉 changePassword route HIT!");
   try {
-    const { id } = req.params;           // user ID from URL
+    const { id } = req.params;
     const { currentPassword, newPassword } = req.body;
 
     if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: "Both current and new password are required" });
+      return res.status(400).json({
+        message: "Both current and new password are required",
+      });
     }
 
     if (newPassword.length < 8) {
-      return res.status(400).json({ message: "New password must be at least 8 characters" });
+      return res.status(400).json({
+        message: "New password must be at least 8 characters",
+      });
     }
 
-    // Find user with password field
     const user = await User.findById(id).select("+password");
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Verify current (old) password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
+
     if (!isMatch) {
       return res.status(401).json({ message: "Current password is incorrect" });
     }
 
-    // Hash the new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update only the password field
-    await User.findByIdAndUpdate(id, { password: hashedNewPassword }, { new: true });
+    await User.findByIdAndUpdate(id, {
+      password: hashedNewPassword,
+    });
 
-    // Optionally: you could invalidate all existing tokens here (advanced)
-    // For simplicity, we just let old tokens expire naturally
+    return res.status(200).json({
+      message: "Password changed successfully",
+    });
 
-    return res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
     console.error("Change password error:", error);
     return res.status(500).json({ message: "Server error" });
@@ -218,6 +203,12 @@ const changePassword = async (req, res) => {
 };
 
 
-
-
-export { getAllUsers, createUser, getUserInfoByID, updateUser, loginUser , changePassword};
+// EXPORTS
+export {
+  getAllUsers,
+  createUser,
+  getUserInfoByID,
+  updateUser,
+  loginUser,
+  changePassword,
+};
